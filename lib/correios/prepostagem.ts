@@ -43,6 +43,7 @@ function montarPayload(destinatario: Destinatario, pacote: PacotePreset) {
         conteudo: cfg.correios.declaracaoConteudo,
         quantidade: 1,
         valor: 0,
+        peso: pacote.pesoG,
       },
     ],
     remetente: {
