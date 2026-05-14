@@ -31,14 +31,20 @@ function montarPayload(destinatario: Destinatario, pacote: PacotePreset) {
   const r = cfg.remetente;
   const payload: Record<string, unknown> = {
     codigoServico: pacote.codigoServico,
-    numeroContrato: cfg.correios.contrato,
-    cartaoPostagem: cfg.correios.cartaoPostagem,
-  };
-  if (cfg.correios.codigoAdministrativo) {
-    payload.codigoAdministrativo = cfg.correios.codigoAdministrativo;
-  }
-  return {
-    ...payload,
+    numeroCartaoPostagem: cfg.correios.cartaoPostagem,
+    cienteObjetoNaoProibido: 1,
+    pesoInformado: String(pacote.pesoG),
+    codigoFormatoObjetoInformado: String(pacote.formato),
+    alturaInformada: String(pacote.alturaCm),
+    larguraInformada: String(pacote.larguraCm),
+    comprimentoInformado: String(pacote.comprimentoCm),
+    itensDeclaracaoConteudo: [
+      {
+        conteudo: cfg.correios.declaracaoConteudo,
+        quantidade: 1,
+        valor: 0,
+      },
+    ],
     remetente: {
       nome: r.nome,
       dddTelefone: r.ddd,
@@ -67,14 +73,11 @@ function montarPayload(destinatario: Destinatario, pacote: PacotePreset) {
         uf: destinatario.endereco.uf,
       },
     },
-    volumeInformado: {
-      altura: pacote.alturaCm,
-      largura: pacote.larguraCm,
-      comprimento: pacote.comprimentoCm,
-      peso: pacote.pesoG,
-      tipoObjeto: pacote.formato,
-    },
   };
+  if (cfg.correios.codigoAdministrativo) {
+    payload.codigoAdministrativo = cfg.correios.codigoAdministrativo;
+  }
+  return payload;
 }
 
 export async function criarPrepostagem(
