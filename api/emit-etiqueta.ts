@@ -40,9 +40,19 @@ interface WebhookBody {
   data?: { id?: string };
 }
 
-function extrairPageId(body: WebhookBody | undefined): string | null {
-  if (!body) return null;
-  const raw = body.pageId ?? body.page_id ?? body.data?.id;
+function extrairPageId(body: unknown): string | null {
+  let parsed: WebhookBody | undefined;
+  if (typeof body === "string") {
+    try {
+      parsed = JSON.parse(body) as WebhookBody;
+    } catch {
+      return null;
+    }
+  } else if (body && typeof body === "object") {
+    parsed = body as WebhookBody;
+  }
+  if (!parsed) return null;
+  const raw = parsed.pageId ?? parsed.page_id ?? parsed.data?.id;
   if (typeof raw !== "string") return null;
   const trimmed = raw.trim();
   return trimmed.length > 0 ? trimmed : null;
@@ -81,22 +91,11 @@ export default async function handler(
   }
 
   if (!autorizado(req, cfg.webhookSecret)) {
-    const got = req.headers["x-webhook-secret"];
-    const auth = req.headers["authorization"];
-    console.log("[emit-etiqueta] auth fail", {
-      expectedLen: cfg.webhookSecret.length,
-      expectedFirst4: cfg.webhookSecret.slice(0, 4),
-      expectedLast4: cfg.webhookSecret.slice(-4),
-      gotXWebhookLen: typeof got === "string" ? got.length : "none",
-      gotXWebhookFirst4: typeof got === "string" ? got.slice(0, 4) : "none",
-      gotXWebhookLast4: typeof got === "string" ? got.slice(-4) : "none",
-      gotAuthHeader: typeof auth === "string" ? `len=${auth.length}` : "none",
-    });
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
 
-  const pageId = extrairPageId(req.body as WebhookBody | undefined);
+  const pageId = extrairPageId(req.body);
   if (!pageId) {
     res.status(400).json({ error: "pageId ausente no corpo da requisição" });
     return;
