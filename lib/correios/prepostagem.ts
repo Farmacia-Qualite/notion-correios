@@ -85,7 +85,7 @@ export async function criarPrepostagem(
   let token = await obterToken();
 
   const exec = async (authToken: string) =>
-    fetch(`${cfg.baseUrl}/prepostagem/v2/prepostagens`, {
+    fetch(`${cfg.baseUrl}/prepostagem/v1/prepostagens`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${authToken}`,
