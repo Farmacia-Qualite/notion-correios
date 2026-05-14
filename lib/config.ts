@@ -49,6 +49,7 @@ export interface CorreiosConfig {
   contrato: string;
   cartaoPostagem: string;
   codigoAdministrativo: string;
+  declaracaoConteudo: string;
 }
 
 export interface R2Config {
@@ -126,6 +127,8 @@ export function getConfig(): AppConfig {
       contrato: required("CORREIOS_CONTRATO"),
       cartaoPostagem: required("CORREIOS_CARTAO_POSTAGEM"),
       codigoAdministrativo: (process.env.CORREIOS_COD_ADMINISTRATIVO ?? "").trim(),
+      declaracaoConteudo:
+        (process.env.CORREIOS_DECLARACAO_CONTEUDO ?? "").trim() || "Medicamentos manipulados",
     },
     r2: {
       accountId: required("R2_ACCOUNT_ID"),
