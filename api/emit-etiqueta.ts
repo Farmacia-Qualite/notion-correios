@@ -81,6 +81,17 @@ export default async function handler(
   }
 
   if (!autorizado(req, cfg.webhookSecret)) {
+    const got = req.headers["x-webhook-secret"];
+    const auth = req.headers["authorization"];
+    console.log("[emit-etiqueta] auth fail", {
+      expectedLen: cfg.webhookSecret.length,
+      expectedFirst4: cfg.webhookSecret.slice(0, 4),
+      expectedLast4: cfg.webhookSecret.slice(-4),
+      gotXWebhookLen: typeof got === "string" ? got.length : "none",
+      gotXWebhookFirst4: typeof got === "string" ? got.slice(0, 4) : "none",
+      gotXWebhookLast4: typeof got === "string" ? got.slice(-4) : "none",
+      gotAuthHeader: typeof auth === "string" ? `len=${auth.length}` : "none",
+    });
     res.status(401).json({ error: "Unauthorized" });
     return;
   }

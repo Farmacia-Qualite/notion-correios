@@ -3,7 +3,7 @@ function required(name: string): string {
   if (!value || value.trim() === "") {
     throw new Error(`Variável de ambiente obrigatória ausente: ${name}`);
   }
-  return value;
+  return value.trim();
 }
 
 function requiredNumber(name: string): number {
