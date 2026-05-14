@@ -13,16 +13,25 @@ import { baixarRotuloPdf } from "../lib/correios/rotulo.js";
 import { buscarEnderecoPorCep } from "../lib/viacep.js";
 import { uploadPdf } from "../lib/r2.js";
 
-function autorizado(req: VercelRequest, secret: string): boolean {
-  const header = req.headers["authorization"];
-  if (typeof header !== "string") return false;
-  const expected = `Bearer ${secret}`;
-  if (header.length !== expected.length) return false;
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
   let diff = 0;
-  for (let i = 0; i < header.length; i++) {
-    diff |= header.charCodeAt(i) ^ expected.charCodeAt(i);
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return diff === 0;
+}
+
+function autorizado(req: VercelRequest, secret: string): boolean {
+  const auth = req.headers["authorization"];
+  if (typeof auth === "string" && safeEqual(auth, `Bearer ${secret}`)) {
+    return true;
+  }
+  const custom = req.headers["x-webhook-secret"];
+  if (typeof custom === "string" && safeEqual(custom, secret)) {
+    return true;
+  }
+  return false;
 }
 
 interface WebhookBody {
