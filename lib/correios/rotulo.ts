@@ -61,19 +61,34 @@ export async function baixarRotuloPdf(idPrePostagem: string): Promise<Buffer> {
   const cfg = getConfig().correios;
   const token = await obterToken();
 
-  // Descoberta: testa OPTIONS em vários paths candidatos
+  // Round 2 da descoberta: paths em outros modulos
   const candidatos = [
-    "/prepostagem/v1/prepostagens/rotulo",
-    "/prepostagem/v1/prepostagens/rotulos",
-    `/prepostagem/v1/prepostagens/${encodeURIComponent(idPrePostagem)}`,
-    "/prepostagem/v1/rotulo",
-    "/prepostagem/v1/rotulos",
-    "/prepostagem/v1/etiqueta",
-    "/prepostagem/v1/etiquetas",
-    "/prepostagem/v1/imprimir",
-    "/prepostagem/v1/imprimirRotulos",
-    "/prepostagem/v1/imprimirEtiquetas",
-    `/prepostagem/v1/prepostagens/rotulo/${encodeURIComponent(idPrePostagem)}`,
+    // imprime-rotulo (modulo separado)
+    "/imprime-rotulo/v1/rotulos",
+    "/imprime-rotulo/v1/imprimir",
+    "/imprime-rotulo/v1/etiqueta",
+    "/imprime-rotulo/v1",
+    // hyphens vs no hyphens
+    "/imprimerotulo/v1/rotulos",
+    "/cws-rotulo/v1/rotulos",
+    "/cwsrotulo/v1/rotulos",
+    "/cws-etiqueta/v1/etiquetas",
+    "/cwsetiqueta/v1/etiquetas",
+    // outras variacoes
+    "/preposta/v1/rotulos",
+    "/etiqueta-postal/v1/rotulos",
+    "/rotulos/v1",
+    // dentro de prepostagem mas paths novos
+    "/prepostagem/v1/lote",
+    "/prepostagem/v1/lotes",
+    "/prepostagem/v1/relatorio",
+    "/prepostagem/v1/exportacao",
+    "/prepostagem/v1/prepostagens/imprimir",
+    "/prepostagem/v1/prepostagens/imprime-rotulo",
+    "/prepostagem/v1/prepostagens/imprimir-rotulo",
+    "/prepostagem/v1/prepostagens/relatorio",
+    "/prepostagem/v1/imprime-rotulo",
+    "/prepostagem/v1/imprimir-rotulo",
   ];
 
   console.log("[correios] iniciando descoberta de endpoint de rotulo");
