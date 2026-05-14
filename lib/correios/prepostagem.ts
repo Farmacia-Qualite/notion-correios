@@ -42,7 +42,7 @@ function montarPayload(destinatario: Destinatario, pacote: PacotePreset) {
       {
         conteudo: cfg.correios.declaracaoConteudo,
         quantidade: 1,
-        valor: 0,
+        valor: 1.0,
         peso: pacote.pesoG,
       },
     ],
@@ -98,6 +98,9 @@ export async function criarPrepostagem(
       },
       body: JSON.stringify(montarPayload(destinatario, pacote)),
     });
+
+  const payloadLog = JSON.stringify(montarPayload(destinatario, pacote));
+  console.log("[correios] prepostagem payload", payloadLog);
 
   let resp = await exec(token);
   if (resp.status === 401 || resp.status === 403) {
