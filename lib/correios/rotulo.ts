@@ -1,5 +1,5 @@
 import { getConfig } from "../config.js";
-import { invalidarTokenCache, obterToken } from "./auth.js";
+import { obterToken } from "./auth.js";
 
 export class CorreiosRotuloError extends Error {
   constructor(message: string, readonly status?: number, readonly body?: unknown) {
@@ -42,79 +42,47 @@ function extrairBase64(parsed: unknown): string | null {
   return null;
 }
 
+async function descobrirMetodos(baseUrl: string, path: string, token: string): Promise<string | null> {
+  try {
+    const resp = await fetch(`${baseUrl}${path}`, {
+      method: "OPTIONS",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const allow = resp.headers.get("allow");
+    console.log("[correios] OPTIONS", { path, status: resp.status, allow });
+    return allow;
+  } catch (err) {
+    console.log("[correios] OPTIONS falhou", { path, error: (err as Error).message });
+    return null;
+  }
+}
+
 export async function baixarRotuloPdf(idPrePostagem: string): Promise<Buffer> {
   const cfg = getConfig().correios;
-  let token = await obterToken();
+  const token = await obterToken();
 
-  const body = JSON.stringify({
-    idsPrePostagem: [idPrePostagem],
-    tipoRotulo: "P",
-    formatoRotulo: "ETIQUETA",
-    imprimeRemetente: "N",
-  });
+  // Descoberta: testa OPTIONS em vários paths candidatos
+  const candidatos = [
+    "/prepostagem/v1/prepostagens/rotulo",
+    "/prepostagem/v1/prepostagens/rotulos",
+    `/prepostagem/v1/prepostagens/${encodeURIComponent(idPrePostagem)}`,
+    "/prepostagem/v1/rotulo",
+    "/prepostagem/v1/rotulos",
+    "/prepostagem/v1/etiqueta",
+    "/prepostagem/v1/etiquetas",
+    "/prepostagem/v1/imprimir",
+    "/prepostagem/v1/imprimirRotulos",
+    "/prepostagem/v1/imprimirEtiquetas",
+    `/prepostagem/v1/prepostagens/rotulo/${encodeURIComponent(idPrePostagem)}`,
+  ];
 
-  const exec = async (authToken: string) =>
-    fetch(`${cfg.baseUrl}/prepostagem/v1/rotulos`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body,
-    });
-
-  let resp = await exec(token);
-  if (resp.status === 401 || resp.status === 403) {
-    invalidarTokenCache();
-    token = await obterToken();
-    resp = await exec(token);
+  console.log("[correios] iniciando descoberta de endpoint de rotulo");
+  for (const path of candidatos) {
+    await descobrirMetodos(cfg.baseUrl, path, token);
   }
 
-  const contentType = resp.headers.get("content-type") ?? "";
-  const allow = resp.headers.get("allow");
-  console.log("[correios] rotulo response", {
-    status: resp.status,
-    contentType,
-    allow,
-  });
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    let parsed: unknown;
-    try {
-      parsed = text ? JSON.parse(text) : null;
-    } catch {
-      parsed = text;
-    }
-    throw new CorreiosRotuloError(
-      `Falha ao obter rótulo (HTTP ${resp.status})`,
-      resp.status,
-      parsed
-    );
-  }
-
-  if (contentType.includes("application/pdf")) {
-    const buf = Buffer.from(await resp.arrayBuffer());
-    return buf;
-  }
-
-  const text = await resp.text();
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    parsed = text;
-  }
-
-  const base64 = extrairBase64(parsed);
-  if (!base64) {
-    throw new CorreiosRotuloError(
-      "Resposta da CWS sem PDF em base64",
-      resp.status,
-      typeof parsed === "string" ? parsed.slice(0, 500) : parsed
-    );
-  }
-
-  return Buffer.from(base64, "base64");
+  throw new CorreiosRotuloError(
+    "Descoberta de endpoint em andamento — confira os logs [correios] OPTIONS para identificar o path correto.",
+    0
+  );
 }
