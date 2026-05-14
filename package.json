@@ -1,0 +1,24 @@
+{
+  "name": "notion-correios",
+  "version": "0.1.0",
+  "description": "Integração Notion ↔ Correios CWS para emissão de etiquetas PAC/Sedex via botão Notion.",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.679.0",
+    "@notionhq/client": "^2.2.15",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.0",
+    "@vercel/node": "^3.2.24",
+    "typescript": "^5.6.3"
+  }
+}
