@@ -73,6 +73,35 @@ function descreverErro(err: unknown): string {
   return String(err);
 }
 
+function logBodyShape(body: unknown): void {
+  if (body == null) {
+    console.log("[emit-etiqueta] body shape: null/undefined");
+    return;
+  }
+  if (typeof body === "string") {
+    console.log("[emit-etiqueta] body shape: string", {
+      length: body.length,
+      preview: body.slice(0, 200),
+    });
+    return;
+  }
+  if (typeof body === "object") {
+    const keys = Object.keys(body as object);
+    console.log("[emit-etiqueta] body shape: object", {
+      topLevelKeys: keys.slice(0, 50),
+      hasData: "data" in (body as object),
+      dataKeys:
+        "data" in (body as object) &&
+        typeof (body as { data?: unknown }).data === "object" &&
+        (body as { data?: unknown }).data !== null
+          ? Object.keys((body as { data: object }).data).slice(0, 50)
+          : "n/a",
+    });
+    return;
+  }
+  console.log("[emit-etiqueta] body shape: other", { type: typeof body });
+}
+
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
@@ -95,12 +124,20 @@ export default async function handler(
     return;
   }
 
+  console.log("[emit-etiqueta] request received", {
+    contentType: req.headers["content-type"],
+    bodyType: typeof req.body,
+  });
+  logBodyShape(req.body);
+
   const pageId = extrairPageId(req.body);
   if (!pageId) {
+    console.log("[emit-etiqueta] pageId extraction failed");
     res.status(400).json({ error: "pageId ausente no corpo da requisição" });
     return;
   }
 
+  console.log("[emit-etiqueta] pageId extracted", { pageId });
   res.status(202).json({ ok: true, pageId });
 
   emitir(pageId).catch((err) => {
@@ -109,8 +146,15 @@ export default async function handler(
 }
 
 async function emitir(pageId: string): Promise<void> {
+  console.log("[emit-etiqueta] emitir start", { pageId });
   try {
     const venda = await buscarVenda(pageId);
+    console.log("[emit-etiqueta] venda lida", {
+      cliente: venda.cliente,
+      local: venda.local,
+      cep: venda.cep,
+      numero: venda.numero,
+    });
 
     if (!ehServicoSuportado(venda.local)) {
       await marcarErro(
