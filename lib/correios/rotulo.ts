@@ -54,7 +54,7 @@ export async function baixarRotuloPdf(idPrePostagem: string): Promise<Buffer> {
   });
 
   const exec = async (authToken: string) =>
-    fetch(`${cfg.baseUrl}/prepostagem/v1/prepostagens/rotulos`, {
+    fetch(`${cfg.baseUrl}/prepostagem/v1/rotulos`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${authToken}`,
