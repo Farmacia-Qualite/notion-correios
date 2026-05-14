@@ -46,22 +46,20 @@ export async function baixarRotuloPdf(idPrePostagem: string): Promise<Buffer> {
   const cfg = getConfig().correios;
   let token = await obterToken();
 
-  const body = JSON.stringify({
-    idsPrePostagem: [idPrePostagem],
+  const qs = new URLSearchParams({
+    idsPrePostagem: idPrePostagem,
     tipoRotulo: "P",
     formatoRotulo: "ETIQUETA",
     imprimeRemetente: "N",
   });
 
   const exec = async (authToken: string) =>
-    fetch(`${cfg.baseUrl}/prepostagem/v1/prepostagens/rotulo`, {
-      method: "POST",
+    fetch(`${cfg.baseUrl}/prepostagem/v1/prepostagens/rotulo?${qs.toString()}`, {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${authToken}`,
-        "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body,
     });
 
   let resp = await exec(token);
