@@ -97,7 +97,7 @@ export function getConfig(): AppConfig {
       cep: required("REMETENTE_CEP").replace(/\D/g, ""),
       cidade: required("REMETENTE_CIDADE"),
       uf: required("REMETENTE_UF").toUpperCase(),
-      ddd: required("REMETENTE_DDD"),
+      ddd: required("REMETENTE_DDD").replace(/\D/g, "").replace(/^0+/, ""),
       telefone: required("REMETENTE_TELEFONE").replace(/\D/g, ""),
       email: required("REMETENTE_EMAIL"),
     },
@@ -125,7 +125,7 @@ export function getConfig(): AppConfig {
       senha: required("CORREIOS_SENHA"),
       contrato: required("CORREIOS_CONTRATO"),
       cartaoPostagem: required("CORREIOS_CARTAO_POSTAGEM"),
-      codigoAdministrativo: required("CORREIOS_COD_ADMINISTRATIVO"),
+      codigoAdministrativo: (process.env.CORREIOS_COD_ADMINISTRATIVO ?? "").trim(),
     },
     r2: {
       accountId: required("R2_ACCOUNT_ID"),

@@ -29,11 +29,16 @@ export class CorreiosPrepostagemError extends Error {
 function montarPayload(destinatario: Destinatario, pacote: PacotePreset) {
   const cfg = getConfig();
   const r = cfg.remetente;
-  return {
+  const payload: Record<string, unknown> = {
     codigoServico: pacote.codigoServico,
     numeroContrato: cfg.correios.contrato,
     cartaoPostagem: cfg.correios.cartaoPostagem,
-    codigoAdministrativo: cfg.correios.codigoAdministrativo,
+  };
+  if (cfg.correios.codigoAdministrativo) {
+    payload.codigoAdministrativo = cfg.correios.codigoAdministrativo;
+  }
+  return {
+    ...payload,
     remetente: {
       nome: r.nome,
       dddTelefone: r.ddd,
