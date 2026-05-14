@@ -125,6 +125,8 @@ export async function criarPrepostagem(
     );
   }
 
+  console.log("[correios] prepostagem response", parsed);
+
   const data = parsed as { id?: string; codigoObjeto?: string };
   if (!data?.id || !data?.codigoObjeto) {
     throw new CorreiosPrepostagemError(
