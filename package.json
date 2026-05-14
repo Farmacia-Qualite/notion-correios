@@ -2,6 +2,7 @@
   "name": "notion-correios",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Webhook que emite etiquetas dos Correios (CWS) a partir de páginas da DB - Vendas no Notion.",
   "engines": {
     "node": ">=20"

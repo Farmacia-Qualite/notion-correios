@@ -138,11 +138,14 @@ export default async function handler(
   }
 
   console.log("[emit-etiqueta] pageId extracted", { pageId });
-  res.status(202).json({ ok: true, pageId });
 
-  emitir(pageId).catch((err) => {
+  try {
+    await emitir(pageId);
+    res.status(200).json({ ok: true, pageId });
+  } catch (err) {
     console.error("[emit-etiqueta] erro não tratado", err);
-  });
+    res.status(500).json({ error: descreverErro(err) });
+  }
 }
 
 async function emitir(pageId: string): Promise<void> {
